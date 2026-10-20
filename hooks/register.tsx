@@ -1,7 +1,7 @@
 import type { Register } from 'claude-code'
 
 import type { AgentRow, UiState } from '../types'
-import { fmtDur, fmtTok, bar, fmtUsd, bumpStreak, groupAgents, pickModel, resolveModel, shortModel, spawnNote, stepCost } from './router'
+import { fmtDur, fmtTok, bar, fmtUsd, bumpStreak, shouldBlock, strictDeny, parseStrict, groupAgents, pickModel, resolveModel, shortModel, spawnNote, stepCost } from './router'
 
 const PANE = 'squadagents'
 const AGENTS = { plugin: 'squadagents', key: 'agents' } as const
@@ -48,13 +48,27 @@ async function refreshStatus($: any) {
   $.ui.status(list.length ? `🤖 ${vivos}/${list.length} · ${fmtUsd(usd(list))} · ahorro ${fmtUsd(saved(list))}` : undefined)
 }
 
+const getStrict = async ($: any): Promise<[boolean, number]> => [
+  ((await $.store.get('strict')) as boolean | undefined) ?? true,
+  ((await $.store.get('strictLimit')) as number | undefined) ?? 6,
+]
+
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({ name: 'squadagents', description: 'Panel de subagentes: modelo, tarea, tokens, tiempo y log' })
     return next(e)
   })
 
-  on('command.run', { command: 'squadagents' }, async $ => {
+  on('command.run', { command: 'squadagents' }, async ($, e) => {
+    const args = String((e as any).args ?? '').trim()
+    if (/^estricto/i.test(args)) {
+      const p = parseStrict(args)
+      if (!p) return { text: 'Uso: /squadagents estricto on|off|<N>' }
+      if (p.strict !== undefined) await ($ as any).store.set('strict', p.strict)
+      if (p.limit !== undefined) await ($ as any).store.set('strictLimit', p.limit)
+      const [st, lim] = await getStrict($)
+      return { text: `squadagents: modo estricto ${st ? 'ON' : 'off'} (límite ${lim})` }
+    }
     await $.ui.open({ id: PANE, title: 'Squad' })
     return { text: 'Panel squadagents abierto.' }
   })
@@ -104,11 +118,16 @@ export const register: Register = on => {
 
   // Aviso de racha: solo agente principal (sin agentId). Agent reinicia; nunca bloquea.
   on('tool.call', async ($, e, next) => {
-    const r = await next(e)
     const ev = e as any
-    if (ev.agentId || r.deny !== undefined) return r
     const name = String(ev.tool ?? ev.toolName ?? ev.name ?? '')
     const key = { plugin: 'squadagents', key: 'streak' } as const
+    if (!ev.agentId) {
+      const [strict, limit] = await getStrict($)
+      const d = ((await ($ as any).state.get(key)).value ?? { direct: 0 }).direct
+      if (shouldBlock(name, d, strict, limit)) return { deny: strictDeny(d) }
+    }
+    const r = await next(e)
+    if (ev.agentId || r.deny !== undefined) return r
     const cur = ((await ($ as any).state.get(key)).value ?? { browser: 0, work: 0, direct: 0 })
     const direct = cur.direct
     const { s, note } = name === 'Agent' ? { s: { browser: 0, work: 0, direct }, note: undefined } : bumpStreak(cur, name)
@@ -183,6 +202,7 @@ export const register: Register = on => {
     const ui: UiState = (await $.state.get(UI)).value ?? { filter: 'todos', open: [] }
     const main = (await ($ as any).state.get(MAIN)).value ?? { cost: 0 }
     const direct = ((await ($ as any).state.get({ plugin: 'squadagents', key: 'streak' })).value ?? { direct: 0 }).direct
+    const [strict, strictLim] = await getStrict($)
     const now = Date.now()
     const frame = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'[Math.floor(now / 200) % 10] // sin elemento Spinner en la API de paneles: glifo por reloj
     const color = (m: string) => (m === 'opus' ? 'magenta' : m === 'sonnet' ? 'cyan' : 'green')
@@ -191,7 +211,7 @@ export const register: Register = on => {
     const groups = groupAgents(shown.slice().reverse())
     return (
       <Box flexDirection="column">
-        <Text color="yellow">principal: {fmtUsd(main.cost)} · acciones directas: {direct}</Text>
+        <Text color="yellow">principal: {fmtUsd(main.cost)} · acciones directas: {direct}{strict ? ` · estricto ≤${strictLim}` : ' · estricto off'}</Text>
         <Text bold>
           {list.length} agentes · {fmtUsd(usd(list))} · ahorro {fmtUsd(saved(list))} vs opus
         </Text>

@@ -139,3 +139,20 @@ export function bumpStreak(s: Streak, tool: string): { s: Streak; note?: string 
     : undefined
   return { s: n, note }
 }
+
+// Modo estricto: herramientas exentas (nunca cuentan ni se bloquean).
+export const isExempt = (n: string) =>
+  /^(Agent|SendMessage|AskUserQuestion|Skill|ToolSearch|TaskStop|ReadNotifications)$/.test(n) || n.startsWith('mcp__ccd_')
+// Solo bloquean las que bumpStreak cuenta (navegador/Bash/Edit/Write); Read/Grep/Glob pasan.
+export const shouldBlock = (tool: string, direct: number, strict: boolean, limit: number) =>
+  strict && !isExempt(tool) && (isBrowserTool(tool) || isWorkTool(tool)) && direct >= limit
+export const strictDeny = (direct: number) =>
+  `squadagents: modo estricto — llevas ${direct} acciones directas. Delega este trabajo a un subagente con la herramienta Agent (sin model). /squadagents estricto off para desactivar.`
+// "estricto on|off|N" -> cambios a aplicar (undefined = args invalidos).
+export function parseStrict(args: string): { strict?: boolean; limit?: number } | undefined {
+  const a = args.trim().split(/\s+/)[1]?.toLowerCase()
+  if (a === 'on') return { strict: true }
+  if (a === 'off') return { strict: false }
+  const n = Number(a)
+  return a && Number.isInteger(n) && n > 0 ? { limit: n } : undefined
+}

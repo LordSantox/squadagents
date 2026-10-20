@@ -33,6 +33,7 @@ Pega esto en Claude Code:
 - Un `model` explícito solo se respeta si es igual o más barato que el de la regla.
 - **Panel `/squadagents`**: subagentes en vivo con modelo, tarea, tokens, costo estimado, ahorro vs opus y log.
 - **Aviso de racha**: si el agente principal hace muchas acciones directas seguidas (navegador >3, Bash/Edit/Write >5) añade una nota sugiriendo delegar.
+- **Modo estricto** (activo por defecto): tras 6 acciones directas seguidas (navegador/Bash/Edit/Write) del agente principal, la siguiente se deniega hasta que delegue con `Agent` (que reinicia el contador). Exentas: Agent, SendMessage, AskUserQuestion, Skill, ToolSearch, TaskStop, ReadNotifications, `mcp__ccd_*`. Se controla con `/squadagents estricto on|off|<N>` (N = límite).
 
 ## Desinstalar
 

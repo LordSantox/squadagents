@@ -1,6 +1,6 @@
 import { test, expect } from 'claude-code/testing'
 
-import { pickModel, fmtTok, fmtDur, groupOf, bar, groupAgents } from './router'
+import { pickModel, fmtTok, fmtDur, groupOf, bar, groupAgents, shouldBlock, isExempt, parseStrict } from './router'
 
 test('Explore usa haiku', () => {
   expect(pickModel('Explore', 'cualquier cosa').model).toBe('haiku')
@@ -57,4 +57,23 @@ test('barra de avance', () => {
 test('agrupa en orden de aparicion', () => {
   const g = groupAgents([{ task: 'A-1 x' }, { task: 'hola' }, { task: 'A-1 y' }])
   expect(g.map(([k, v]) => [k, v.length])).toEqual([['A-1', 2], ['otros', 1]])
+})
+
+test('modo estricto: shouldBlock e isExempt', () => {
+  expect(shouldBlock('Bash', 6, true, 6)).toBe(true)
+  expect(shouldBlock('Bash', 5, true, 6)).toBe(false)
+  expect(shouldBlock('Bash', 9, false, 6)).toBe(false)
+  expect(shouldBlock('Read', 9, true, 6)).toBe(false)
+  expect(shouldBlock('Agent', 9, true, 6)).toBe(false)
+  expect(shouldBlock('mcp__Claude_Browser__navigate', 6, true, 6)).toBe(true)
+  expect(isExempt('mcp__ccd_turn__wrap_up')).toBe(true)
+  expect(isExempt('Skill')).toBe(true)
+  expect(isExempt('Bash')).toBe(false)
+})
+
+test('parseStrict', () => {
+  expect(parseStrict('estricto off')).toEqual({ strict: false })
+  expect(parseStrict('estricto on')).toEqual({ strict: true })
+  expect(parseStrict('estricto 8')).toEqual({ limit: 8 })
+  expect(parseStrict('estricto x')).toBeUndefined()
 })

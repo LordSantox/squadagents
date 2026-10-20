@@ -33,6 +33,7 @@ Paste this into Claude Code:
 - An explicit `model` is kept only if it is the same price or cheaper than the rule's pick.
 - **`/squadagents` panel**: live subagents with model, task, tokens, estimated cost, savings vs opus, and log.
 - **Streak warning**: if the main agent takes many direct actions in a row (browser >3, Bash/Edit/Write >5), it adds a note suggesting delegation.
+- **Strict mode** (on by default): after 6 consecutive direct actions (browser/Bash/Edit/Write) by the main agent, the next one is denied until it delegates with `Agent` (which resets the counter). Exempt: Agent, SendMessage, AskUserQuestion, Skill, ToolSearch, TaskStop, ReadNotifications, `mcp__ccd_*`. Control it with `/squadagents estricto on|off|<N>` (N = limit).
 
 The UI text and notes are in Spanish.
 
