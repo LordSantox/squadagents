@@ -59,10 +59,10 @@ export const fmtDur = (ms: number) => {
 // Lo que el modelo principal lee en su system prompt. Sin esto, una sesion
 // asumio que los subagentes heredaban su modelo y le informo mal al usuario.
 export const PROMPT_SECTION = [
-  '# Mod agent-router (activo)',
-  'Cuando lanzas un subagente con la herramienta Agent SIN el parametro `model`, el mod agent-router elige el modelo (haiku/sonnet/opus) con reglas sobre el tipo y el prompt; NO hereda el modelo de esta sesion.',
+  '# Mod squadagents (activo)',
+  'Cuando lanzas un subagente con la herramienta Agent SIN el parametro `model`, el mod squadagents elige el modelo (haiku/sonnet/opus) con reglas sobre el tipo y el prompt; NO hereda el modelo de esta sesion.',
   'Reglas: Plan -> opus; Explore -> haiku (sonnet si debe verificar contra el codigo); planificar/disenar/decidir/validar/investigar/comparar contra -> opus; tests/diagnostico/implementar -> sonnet; buscar/leer/listar corto -> haiku; pruebas de navegador con guion (clic/captura/recorrer UI) -> haiku, sonnet si ademas diagnostica (se evalua antes que opus); resto -> sonnet.',
-  'Si la tarea exige criterio y el prompt no lo deja claro, pasa `model` explicito: el mod lo respeta. Si llevas muchas acciones directas seguidas (navegador >3, Bash/Edit/Write >5) el mod te avisa: delega a un subagente. Tras cada Agent llega una nota "agent-router:" con el modelo elegido; usa ESE dato si el usuario pregunta, no lo supongas.',
+  'Si la tarea exige criterio y el prompt no lo deja claro, pasa `model` explicito: el mod lo respeta. Si llevas muchas acciones directas seguidas (navegador >3, Bash/Edit/Write >5) el mod te avisa: delega a un subagente. Tras cada Agent llega una nota "squadagents:" con el modelo elegido; usa ESE dato si el usuario pregunta, no lo supongas.',
 ].join('\n')
 
 const RANK: Record<string, number> = { haiku: 0, sonnet: 1, opus: 2 }
@@ -79,7 +79,7 @@ export function resolveModel(p: Pick, explicit?: string, parentModel?: string): 
 
 export const spawnNote = (p: Pick, explicit?: string, parentModel?: string) => {
   const r = resolveModel(p, explicit, parentModel)
-  return `agent-router: este subagente corre con ${r.model} (${r.why}). Las reglas mandan; un model explicito solo puede bajar el costo.`
+  return `squadagents: este subagente corre con ${r.model} (${r.why}). Las reglas mandan; un model explicito solo puede bajar el costo.`
 }
 
 // Precios oficiales USD por millón de tokens (skill claude-api, cache 2026-10-06).
@@ -135,7 +135,7 @@ export function bumpStreak(s: Streak, tool: string): { s: Streak; note?: string 
   const n = { browser: b ? s.browser + 1 : 0, work: w ? s.work + 1 : 0, direct: s.direct + 1 }
   const k = b ? n.browser : n.work
   const note = (b ? k > 3 : k > 5)
-    ? `agent-router: llevas ${k} acciones directas seguidas con el modelo principal; delega este trabajo a un subagente (navegador con guion → haiku; implementar/diagnosticar → sonnet)`
+    ? `squadagents: llevas ${k} acciones directas seguidas con el modelo principal; delega este trabajo a un subagente (navegador con guion → haiku; implementar/diagnosticar → sonnet)`
     : undefined
   return { s: n, note }
 }

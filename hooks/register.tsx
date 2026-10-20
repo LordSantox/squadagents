@@ -3,12 +3,12 @@ import type { Register } from 'claude-code'
 import type { AgentRow, UiState } from '../types'
 import { fmtDur, fmtTok, bar, fmtUsd, bumpStreak, groupAgents, pickModel, resolveModel, shortModel, spawnNote, stepCost } from './router'
 
-const PANE = 'agent-router'
-const AGENTS = { plugin: 'agent-router', key: 'agents' } as const
+const PANE = 'squadagents'
+const AGENTS = { plugin: 'squadagents', key: 'agents' } as const
 const MAX_ROWS = 30
 const MAX_LOG = 12
-const MAIN = { plugin: 'agent-router', key: 'main' } as const
-const UI = { plugin: 'agent-router', key: 'ui' } as const
+const MAIN = { plugin: 'squadagents', key: 'main' } as const
+const UI = { plugin: 'squadagents', key: 'ui' } as const
 const FILTERS: Array<[UiState['filter'], string]> = [['todos', 'Todos'], ['running', 'Corriendo'], ['done', 'Terminados'], ['failed', 'Fallados']]
 const STOP_MSG = 'Detente despues del paso actual y reporta tu estado.'
 
@@ -50,13 +50,13 @@ async function refreshStatus($: any) {
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
-    await $.command.register({ name: 'agentes', description: 'Panel de subagentes: modelo, tarea, tokens, tiempo y log' })
+    await $.command.register({ name: 'squad', description: 'Panel de subagentes: modelo, tarea, tokens, tiempo y log' })
     return next(e)
   })
 
-  on('command.run', { command: 'agentes' }, async $ => {
+  on('command.run', { command: 'squad' }, async $ => {
     await $.ui.open({ id: PANE, title: 'Agentes' })
-    return { text: 'Panel de agentes abierto.' }
+    return { text: 'Panel squadagents abierto.' }
   })
 
   // Elige el modelo antes de arrancar el subagente. Respeta un `model` explicito y los forks.
@@ -108,7 +108,7 @@ export const register: Register = on => {
     const ev = e as any
     if (ev.agentId || r.deny !== undefined) return r
     const name = String(ev.tool ?? ev.toolName ?? ev.name ?? '')
-    const key = { plugin: 'agent-router', key: 'streak' } as const
+    const key = { plugin: 'squadagents', key: 'streak' } as const
     const cur = ((await ($ as any).state.get(key)).value ?? { browser: 0, work: 0, direct: 0 })
     const direct = cur.direct
     const { s, note } = name === 'Agent' ? { s: { browser: 0, work: 0, direct }, note: undefined } : bumpStreak(cur, name)
@@ -182,7 +182,7 @@ export const register: Register = on => {
     const list: AgentRow[] = (await $.state.get(AGENTS)).value ?? []
     const ui: UiState = (await $.state.get(UI)).value ?? { filter: 'todos', open: [] }
     const main = (await ($ as any).state.get(MAIN)).value ?? { cost: 0 }
-    const direct = ((await ($ as any).state.get({ plugin: 'agent-router', key: 'streak' })).value ?? { direct: 0 }).direct
+    const direct = ((await ($ as any).state.get({ plugin: 'squadagents', key: 'streak' })).value ?? { direct: 0 }).direct
     const now = Date.now()
     const frame = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'[Math.floor(now / 200) % 10] // sin elemento Spinner en la API de paneles: glifo por reloj
     const color = (m: string) => (m === 'opus' ? 'magenta' : m === 'sonnet' ? 'cyan' : 'green')

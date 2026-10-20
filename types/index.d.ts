@@ -18,6 +18,6 @@ export type UiState = { filter: 'todos' | 'running' | 'done' | 'failed'; open: s
 
 declare module 'claude-code' {
   interface PluginState {
-    'agent-router': { agents: AgentRow[]; ui: UiState; main: { cost: number }; streak: { browser: number; work: number; direct: number } }
+    'squadagents': { agents: AgentRow[]; ui: UiState; main: { cost: number }; streak: { browser: number; work: number; direct: number } }
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "agent-router",
+  "name": "squadagents",
   "owner": { "name": "LordSantox" },
-  "plugins": [{ "name": "agent-router", "source": "./" }]
+  "plugins": [{ "name": "squadagents", "source": "./" }]
 }
