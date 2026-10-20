@@ -1,6 +1,6 @@
 {
   "name": "squadagents",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Elige haiku/sonnet/opus para cada subagente con reglas locales (0 tokens) y muestra los agentes en vivo: modelo, tarea, tokens, tiempo y log.",
   "types": "./types/index.d.ts",
   "author": { "name": "sretamales" }

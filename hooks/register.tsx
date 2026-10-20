@@ -1,6 +1,7 @@
 import type { Register } from 'claude-code'
 
 import type { AgentRow, UiState } from '../types'
+import { summarySvg, agentSvg } from './svg'
 import { fmtDur, fmtTok, bar, fmtUsd, bumpStreak, shouldBlock, strictDeny, parseStrict, groupAgents, pickModel, resolveModel, shortModel, spawnNote, stepCost } from './router'
 
 const PANE = 'squadagents'
@@ -198,6 +199,7 @@ export const register: Register = on => {
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const { Box, Text, Button } = $.ui.resolve(e)
+    const Svg = (e as any).surface === 'desktop' ? ($.ui.resolve(e) as any).Svg : undefined
     const list: AgentRow[] = (await $.state.get(AGENTS)).value ?? []
     const ui: UiState = (await $.state.get(UI)).value ?? { filter: 'todos', open: [] }
     const main = (await ($ as any).state.get(MAIN)).value ?? { cost: 0 }
@@ -209,6 +211,41 @@ export const register: Register = on => {
     const setUi = (fn: (u: UiState) => UiState) => $.state.set(UI, fn(ui))
     const shown = list.filter(a => ui.filter === 'todos' || a.status === ui.filter)
     const groups = groupAgents(shown.slice().reverse())
+    if (Svg) {
+      const maxTok = Math.max(1, ...shown.map(a => a.tokens))
+      return (
+        <Box flexDirection="column">
+          <Svg isInteractive width={560} height={64} alt="Resumen de costo y ahorro" source={summarySvg(list.length, usd(list), saved(list), main.cost, direct, strict, strictLim)} />
+          <Box>
+            {FILTERS.map(([f, label]) => (
+              <Button key={`f-${f}`} variant={ui.filter === f ? 'primary' : undefined} onPress={() => void setUi(u => ({ ...u, filter: f }))}>{label}</Button>
+            ))}
+            <Button key="clear" dimColor onPress={() => void mutate($, l => l.filter(a => a.status !== 'done')).then(() => refreshStatus($))}>Limpiar terminados</Button>
+          </Box>
+          {shown.length === 0 && <Text dimColor>{list.length ? 'Nada con ese filtro.' : 'Sin subagentes todavia. Se listan al lanzarse.'}</Text>}
+          {shown.slice().reverse().map(a => {
+            const isOpen = ui.open.includes(a.id)
+            return (
+              <Box flexDirection="column" marginTop={1}>
+                <Svg isInteractive width={560} height={96} alt={`${a.name} ${a.model} ${a.status}`} source={agentSvg(a, maxTok, now)} />
+                <Box>
+                  <Button key={`x-${a.id}`} plain onPress={() => void setUi(u => ({ ...u, open: isOpen ? u.open.filter(i => i !== a.id) : [...u.open, a.id] }))}>{isOpen ? '▾ detalle' : '▸ detalle'}</Button>
+                  {a.status === 'running' && (
+                    <Button key={`s-${a.id}`} dimColor onPress={() => void $.session.send({ to: { agentId: a.id }, text: STOP_MSG })}>Pedir que frene</Button>
+                  )}
+                </Box>
+                {isOpen && (
+                  <Box flexDirection="column">
+                    <Text dimColor>  modelo: {a.why} · cache: {fmtTok(a.cacheRead)} tok · inicio {new Date(a.startedAt).toLocaleTimeString()}</Text>
+                    {a.log.map(l => <Text dimColor>  · {l}</Text>)}
+                  </Box>
+                )}
+              </Box>
+            )
+          })}
+        </Box>
+      )
+    }
     return (
       <Box flexDirection="column">
         <Text color="yellow">principal: {fmtUsd(main.cost)} · acciones directas: {direct}{strict ? ` · estricto ≤${strictLim}` : ' · estricto off'}</Text>
