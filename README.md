@@ -1,43 +1,47 @@
 # agent-router
 
-Mod para Claude Code. Elige haiku/sonnet/opus para cada subagente con reglas locales (0 tokens) y muestra los agentes en vivo: modelo, tarea, tokens, costo, tiempo y log (`/agentes`).
+**English** | [Español](README.es.md)
 
-## Instalar
+A Claude Code mod. It picks haiku/sonnet/opus for each subagent using local rules (0 tokens) and shows agents live: model, task, tokens, cost, time and log (`/agentes`).
 
-En una sesión de Claude Code:
+## Install
+
+In a Claude Code session:
 
 ```
 /plugin install agent-router --marketplace LordSantox/agent-router
 ```
 
-Responde `y` para añadir el marketplace y elige el alcance (usuario o proyecto).
+Answer `y` to add the marketplace, then choose the scope (user or project).
 
-Desde una terminal:
+From a terminal:
 
 ```bash
 claude plugin install agent-router --marketplace LordSantox/agent-router
 ```
 
-### Instalarlo pidiéndoselo a Claude
+### Install by asking Claude
 
-Pega esto en Claude Code:
+Paste this into Claude Code:
 
-> Instala el mod de https://github.com/LordSantox/agent-router siguiendo las instrucciones de su README.
+> Install the mod from https://github.com/LordSantox/agent-router following the instructions in its README.
 
-## Qué hace
+## What it does
 
-- **Ruteo de modelo**: si lanzas un subagente sin `model`, el mod lo elige por reglas (`hooks/router.ts`):
-  Plan→opus · Explore→haiku (sonnet si verifica código) · validar/investigar/decidir/planificar→opus · tests/diagnóstico/implementar→sonnet · buscar/leer corto→haiku · resto→sonnet.
-- Un `model` explícito solo se respeta si es igual o más barato que el de la regla.
-- **Panel `/agentes`**: subagentes en vivo con modelo, tarea, tokens, costo estimado, ahorro vs opus y log.
-- **Aviso de racha**: si el agente principal hace muchas acciones directas seguidas (navegador >3, Bash/Edit/Write >5) añade una nota sugiriendo delegar.
+- **Model routing**: when you launch a subagent without `model`, the mod picks one by rules (`hooks/router.ts`):
+  Plan→opus · Explore→haiku (sonnet if it verifies code) · validate/investigate/decide/plan→opus · tests/diagnose/implement→sonnet · short search/read→haiku · everything else→sonnet.
+- An explicit `model` is kept only if it is the same price or cheaper than the rule's pick.
+- **`/agentes` panel**: live subagents with model, task, tokens, estimated cost, savings vs opus, and log.
+- **Streak warning**: if the main agent takes many direct actions in a row (browser >3, Bash/Edit/Write >5), it adds a note suggesting delegation.
 
-## Desinstalar
+The UI text and notes are in Spanish.
+
+## Uninstall
 
 ```
 /plugin uninstall agent-router
 ```
 
-## Licencia
+## License
 
 MIT
