@@ -2,7 +2,7 @@
 
 **English** | [Español](README.es.md)
 
-A Claude Code mod. It picks haiku/sonnet/opus for each subagent using local rules (0 tokens) and shows agents live: model, task, tokens, cost, time and log (`/squad`).
+A Claude Code mod. It picks haiku/sonnet/opus for each subagent using local rules (0 tokens) and shows agents live: model, task, tokens, cost, time and log (`/squadagents`).
 
 ## Install
 
@@ -31,7 +31,7 @@ Paste this into Claude Code:
 - **Model routing**: when you launch a subagent without `model`, the mod picks one by rules (`hooks/router.ts`):
   Plan→opus · Explore→haiku (sonnet if it verifies code) · validate/investigate/decide/plan→opus · tests/diagnose/implement→sonnet · short search/read→haiku · everything else→sonnet.
 - An explicit `model` is kept only if it is the same price or cheaper than the rule's pick.
-- **`/squad` panel**: live subagents with model, task, tokens, estimated cost, savings vs opus, and log.
+- **`/squadagents` panel**: live subagents with model, task, tokens, estimated cost, savings vs opus, and log.
 - **Streak warning**: if the main agent takes many direct actions in a row (browser >3, Bash/Edit/Write >5), it adds a note suggesting delegation.
 
 The UI text and notes are in Spanish.

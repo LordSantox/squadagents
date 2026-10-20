@@ -50,11 +50,11 @@ async function refreshStatus($: any) {
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
-    await $.command.register({ name: 'squad', description: 'Panel de subagentes: modelo, tarea, tokens, tiempo y log' })
+    await $.command.register({ name: 'squadagents', description: 'Panel de subagentes: modelo, tarea, tokens, tiempo y log' })
     return next(e)
   })
 
-  on('command.run', { command: 'squad' }, async $ => {
+  on('command.run', { command: 'squadagents' }, async $ => {
     await $.ui.open({ id: PANE, title: 'Squad' })
     return { text: 'Panel squadagents abierto.' }
   })
