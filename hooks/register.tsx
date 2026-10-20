@@ -55,7 +55,7 @@ export const register: Register = on => {
   })
 
   on('command.run', { command: 'squad' }, async $ => {
-    await $.ui.open({ id: PANE, title: 'Agentes' })
+    await $.ui.open({ id: PANE, title: 'Squad' })
     return { text: 'Panel squadagents abierto.' }
   })
 
@@ -85,7 +85,7 @@ export const register: Register = on => {
     }
     await mutate($, list => [...list, row].slice(-MAX_ROWS))
     await refreshStatus($)
-    void $.ui.open({ id: PANE, title: 'Agentes' })
+    void $.ui.open({ id: PANE, title: 'Squad' })
     return r
   })
 
@@ -127,7 +127,7 @@ export const register: Register = on => {
           await patch($, info.id, a => ({ ...a, status: 'running', endedAt: undefined,
             log: [...a.log, 'retomado (SendMessage)'].slice(-MAX_LOG) }))
           await refreshStatus($)
-          void $.ui.open({ id: PANE, title: 'Agentes' })
+          void $.ui.open({ id: PANE, title: 'Squad' })
         }
       } catch {}
     }
