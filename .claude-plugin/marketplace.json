@@ -1,0 +1,5 @@
+{
+  "name": "agent-router",
+  "owner": { "name": "LordSantox" },
+  "plugins": [{ "name": "agent-router", "source": "./" }]
+}
